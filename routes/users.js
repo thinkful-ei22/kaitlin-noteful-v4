@@ -7,6 +7,8 @@ const User = require('../models/user');
 
 const userRouter = express.Router();
 
+// PROTECT THE ENDPOINTS
+
 
 /* ========== POST/CREATE AN ITEM ========== */
 
