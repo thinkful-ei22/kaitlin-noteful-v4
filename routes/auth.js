@@ -19,7 +19,14 @@ function createAuthToken (user) {
 
 authRouter.post('/login', localAuth, function (req, res) {
   const authToken = createAuthToken(req.user);
-  res.json(authToken);
+  res.json({ authToken });
+});
+
+const jwtAuth = passport.authenticate('jwt', { session: false, failWithError: true });
+
+authRouter.post('/refresh', jwtAuth, (req, res) => {
+  const authToken = createAuthToken(req.user);
+  res.json({ authToken });
 });
 
 module.exports = authRouter;
