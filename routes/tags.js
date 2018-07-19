@@ -9,7 +9,7 @@ const Note = require('../models/note');
 
 const router = express.Router();
 
-const  { getAllTagsHandler, getTagByIdHandler } = require('../controls/tags-handlers');
+const  { getAllTagsHandler, getTagByIdHandler, createTagHandler, updateTagHandler, deleteTagHandler } = require('../controls/tags-handlers');
 
 // PROTECT THE ENDPOINTS
 
@@ -22,97 +22,12 @@ router.get('/', getAllTagsHandler);
 router.get('/:id', getTagByIdHandler);
 
 /* ========== POST/CREATE AN ITEM ========== */
-router.post('/', (req, res, next) => {
-  const { name } = req.body;
-  const userId = req.user.id;
-
-  const newTag = { name, userId };
-
-  /***** Never trust users - validate input *****/
-  if (!name) {
-    const err = new Error('Missing `name` in request body');
-    err.status = 400;
-    return next(err);
-  }
-
-  Tag.create(newTag)
-    .then(result => {
-      res.location(`${req.originalUrl}/${result.id}`).status(201).json(result);
-    })
-    .catch(err => {
-      if (err.code === 11000) {
-        err = new Error('Tag name already exists');
-        err.status = 400;
-      }
-      next(err);
-    });
-});
+router.post('/', createTagHandler);
 
 /* ========== PUT/UPDATE A SINGLE ITEM ========== */
-router.put('/:id', (req, res, next) => {
-  const { id } = req.params;
-  const { name } = req.body;
-  const userId = req.user.id;
-
-  /***** Never trust users - validate input *****/
-  if (!mongoose.Types.ObjectId.isValid(id)) {
-    const err = new Error('The `id` is not valid');
-    err.status = 400;
-    return next(err);
-  }
-
-  if (!name) {
-    const err = new Error('Missing `name` in request body');
-    err.status = 400;
-    return next(err);
-  }
-
-  const updateTag = { name };
-
-  Tag.findOneAndUpdate( { _id: id, userId }, updateTag, { new: true })
-    .then(result => {
-      if (result) {
-        res.json(result);
-      } else {
-        next();
-      }
-    })
-    .catch(err => {
-      if (err.code === 11000) {
-        err = new Error('Tag name already exists');
-        err.status = 400;
-      }
-      next(err);
-    });
-});
+router.put('/:id', updateTagHandler);
 
 /* ========== DELETE/REMOVE A SINGLE ITEM ========== */
-router.delete('/:id', (req, res, next) => {
-  const { id } = req.params;
-  const userId = req.user.id;
-
-  /***** Never trust users - validate input *****/
-  if (!mongoose.Types.ObjectId.isValid(id)) {
-    const err = new Error('The `id` is not valid');
-    err.status = 400;
-    return next(err);
-  }
-
-  const tagRemovePromise = Tag.findOneAndRemove({ _id: id, userId });
-
-  const noteUpdatePromise = Note.updateMany(
-    { tags: id, },
-    { $pull: { tags: id } }
-  );
-
-  Promise.all([tagRemovePromise, noteUpdatePromise])
-    .then(() => {
-      res.sendStatus(204).end();
-    })
-    .catch(err => {
-      next(err);
-    });
-
-});
+router.delete('/:id', deleteTagHandler);
 
 module.exports = router;
