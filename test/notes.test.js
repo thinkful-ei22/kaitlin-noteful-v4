@@ -19,7 +19,6 @@ const seedUsers = require('../db/seed/users');
 const jwt = require('jsonwebtoken');
 const { TEST_MONGODB_URI, JWT_SECRET, JWT_EXPIRY } = require('../config');
 
-
 chai.use(chaiHttp);
 const expect = chai.expect;
 
