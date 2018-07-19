@@ -193,6 +193,10 @@ router.put('/:id', (req, res, next) => {
     }
   }
 
+  if (folderId === '') {
+    return Promise.resolve();
+  }
+
   const updateNote = { title, content, folderId, tags };
 
 
