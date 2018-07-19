@@ -1,3 +1,10 @@
 language: node_js
 node_js: node
 services: mongodb
+deploy:
+  provider: heroku
+  api_key:
+    secure: yl2/zNbaoEcLVK+GFQtDSIo9xs1nm1k3qCglTCkDvBlAOCX7AseeV/9tEGFpCAhCxGwswVOjkIu6ewCTWKC2iRfiY67fEly6pwE8HO+VFppvNt3hc2DW4Yx183Q5/cm7N9bOdQmJ/rjtVDo8sGvNvtoxFqWaAxYA3FGiVnyxnyM9OQdDuaMdNRAHmi/WIv3Kr0xIgd5ldZWYO7xFgcW+nMp2ytUV8vfVsV4TnsIbjnt3OjzZc7p68p6IQWT+K5DHn2VnuU1WAoCrwjMsFCcWCaQ1LRGhBCcZ+cXAwZuAi1ShRoXAIkWM86qB+Hg4en84RXQOdOkXTd69wQbjVKM8P35CYXKbTFhDdfJnF11WFSZLv9IKZ9gzXIoxgr+Y0kASuBY58I6RGPvqCSqkYzQVaDdtHktstKOFOzyBuVxdAY2Mp3A9kw1IHq4iTI2rBV4S4HQlfqbO8X8552s33YBEVBNLYgaTZBTkK3nW7tFH7yfrvTnFDNkv/xBY5/ba24MUKS0ppij+JRQxM34Xzu/o74121NGVzyIXgIhCrMUPV3efKKIZEyCbSm3hLJiyjasiUlnx8n1cPfeP5MV0xKqyJMJa7n/6A8Y6dumyE0jgNb9mUISUTuxex1AsrO+78BfQLZrFtLt2sPECqrB/WDU9Ru5Ah0psM5yHTdYMDqhr/48=
+  app: kaitlin-noteful-v4
+  on:
+    repo: thinkful-ei22/kaitlin-noteful-v4
