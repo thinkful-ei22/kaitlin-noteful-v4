@@ -1,6 +1,6 @@
 'use strict';
 
-const mongoose = require('mongoose');
+const mongoose = require('mongoose'); 
 
 const Folder = require('../models/folder');
 const Note = require('../models/note');
