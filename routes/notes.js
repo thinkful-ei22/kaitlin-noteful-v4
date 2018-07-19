@@ -17,7 +17,7 @@ router.use('/', passport.authenticate('jwt', { session: false, failWithError: tr
 // VALIDATE FOLDERS
 
 function validateFolderId (folderId, userId) {
-  if (folderId === undefined || folderId === '') {
+  if (folderId === undefined) {
     return Promise.resolve();
   }
   if (!mongoose.Types.ObjectId.isValid(folderId)) {
