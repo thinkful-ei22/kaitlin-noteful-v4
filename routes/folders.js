@@ -57,6 +57,7 @@ router.get('/:id', (req, res, next) => {
 router.post('/', (req, res, next) => {
   const { name } = req.body;
   const userId = req.user.id;
+  const id = req.body.id;
 
   const newFolder = { name, userId };
 

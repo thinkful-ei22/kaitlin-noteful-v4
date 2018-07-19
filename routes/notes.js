@@ -5,6 +5,8 @@ const mongoose = require('mongoose');
 const passport = require('passport');
 
 const Note = require('../models/note');
+const Folder = require('../models/folder');
+const Tag = require('../models/tag');
 
 const router = express.Router();
 
@@ -12,12 +14,56 @@ const router = express.Router();
 
 router.use('/', passport.authenticate('jwt', { session: false, failWithError: true }));
 
+// VALIDATE FOLDERS
+
+function validateFolderId (folderId, userId) {
+  if (folderId === undefined) {
+    return Promise.resolve();
+  }
+  if (!mongoose.Types.ObjectId.isValid(folderId)) {
+    const err = new Error('The `folderId` is not valid');
+    err.status = 400;
+    return Promise.reject(err);
+  }
+  return Folder.count({ _id: folderId, userId })
+    .then(count => {
+      if (count === 0) {
+        const err = new Error('The `folderId` is not valid');
+        err.status = 400;
+        return Promise.reject(err);
+      }
+    });
+}
+
+// VALIDATE TAGS
+
+function validateTagIds (tags, userId) {
+  if (tags === undefined) {
+    return Promise.resolve();
+  }
+  if (!Array.isArray(tags)) {
+    const err = new Error('The `tags` must be an array');
+    err.status = 400;
+    return Promise.reject(err);
+  }
+  return Tag.find({ $and: [{ _id: {$in: tags}, userId }] })
+    .then(results => {
+      if (tags.length !== results.length) {
+        const err = new Error('The `tags` array contains an invalid id');
+        err.status = 400;
+        return Promise.reject(err);
+      }
+    });
+}
+
 /* ========== GET/READ ALL ITEMS ========== */
 router.get('/', (req, res, next) => {
   const { searchTerm, folderId, tagId } = req.query;
   const userId = req.user.id;
  
   let filter = { userId };
+
+  
 
   if (searchTerm) {
     const re = new RegExp(searchTerm, 'i');
@@ -80,6 +126,8 @@ router.post('/', (req, res, next) => {
     return next(err);
   }
 
+  // For folders, verify the folderId is a valid ObjectId and the item belongs to the current user. If the validation fails, then return an error message 'The folderId is not valid' with status 400.
+
   if (folderId && !mongoose.Types.ObjectId.isValid(folderId)) {
     const err = new Error('The `folderId` is not valid');
     err.status = 400;
@@ -98,12 +146,13 @@ router.post('/', (req, res, next) => {
 
   const newNote = { title, content, folderId, tags, userId };
 
-  Note.create(newNote)
+  Promise.all([
+    validateFolderId(folderId, userId),
+    validateTagIds(tags, userId)
+  ])
+    .then(() => Note.create(newNote))
     .then(result => {
-      res
-        .location(`${req.originalUrl}/${result.id}`)
-        .status(201)
-        .json(result);
+      res.location(`${req.originalUrl}/${result.id}`).status(201).json(result);
     })
     .catch(err => {
       next(err);
@@ -146,7 +195,12 @@ router.put('/:id', (req, res, next) => {
 
   const updateNote = { title, content, folderId, tags };
 
-  Note.findOneAndUpdate({ _id: id, userId }, updateNote, { new: true })
+
+  Promise.all([
+    validateFolderId(folderId, userId),
+    validateTagIds(tags, userId)
+  ])
+    .then(() => Note.findOneAndUpdate({ _id: id, userId }, updateNote, { new: true }))
     .then(result => {
       if (result) {
         res.json(result);

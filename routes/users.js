@@ -13,7 +13,7 @@ const userRouter = express.Router();
 /* ========== POST/CREATE AN ITEM ========== */
 
 userRouter.post('/', (req, res, next) => {
-  const { username, password, fullname } = req.body;
+  let { username, password, fullname } = req.body;
 
   /***** Never trust users - validate input *****/
 
@@ -23,9 +23,12 @@ userRouter.post('/', (req, res, next) => {
   const missingField = requiredFields.find(field => !(field in req.body));
 
   if(missingField) {
-    const err = new Error(`Missing '${missingField}' in request body`);
-    err.status = 422;
-    return next(err);
+    return res.status(422).json({
+      code: 422,
+      reason: 'ValidationError',
+      message: `Missing '${missingField}' in request body`,
+      location: `${missingField}`
+    });
   }
 
   // VALIDATE FOR FIELD TYPE = STRING
@@ -46,19 +49,22 @@ userRouter.post('/', (req, res, next) => {
 
   // VALIDATE FOR WHITESPACE & TRIMMING
 
-  const trimmedFields = ['username', 'password'];
-  const nonTrimmedFields = trimmedFields.find(
+  const explicityTrimmedFields = ['username', 'password'];
+  const nonTrimmedField = explicityTrimmedFields.find(
     field => req.body[field].trim() !== req.body[field]
   );
 
-  if (nonTrimmedFields) {
-    return res.status(422).json({
-      code: 422,
-      reason: 'ValidationError',
-      message: 'Cannot start or end with whitespace',
-      location: nonTrimmedFields
-    });
+  if (nonTrimmedField) {
+    const err = new Error(`Field: '${nonTrimmedField}' cannot start or end with whitespace`);
+    err.status = 422;
+    return next(err);
   }
+
+  // Username and password come in pre-trimmed, otherwise we throw an error
+  // before this
+  fullname = fullname.trim();
+
+    
 
   // VALIDATE FOR FIELD SIZES
 
@@ -94,9 +100,24 @@ userRouter.post('/', (req, res, next) => {
     });
   }
 
-  // let newUser = { username, password, fullname };
+  // VALIDATE FOR DUPLICATE USERNAMES
 
-  return User.hashPassword(password)
+  const testUser = { username };
+
+  User.findOne(testUser)
+    .then (result => {
+      if(result) {
+        return Promise.reject({
+          code: 1000,
+          reason: 'ValidationError',
+          message: 'The username already exists'
+        });
+      } 
+      return Promise.resolve();
+    })
+    .then(() => {
+      return User.hashPassword(password);
+    })
     .then(digest => {
       const newUser = {
         username,
@@ -116,5 +137,6 @@ userRouter.post('/', (req, res, next) => {
       next(err);
     });
 });
+
 
 module.exports = userRouter;
