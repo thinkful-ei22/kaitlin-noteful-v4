@@ -17,7 +17,7 @@ router.use('/', passport.authenticate('jwt', { session: false, failWithError: tr
 // VALIDATE FOLDERS
 
 function validateFolderId (folderId, userId) {
-  if (folderId === undefined) {
+  if (folderId === undefined || folderId === '') {
     return Promise.resolve();
   }
   if (!mongoose.Types.ObjectId.isValid(folderId)) {
@@ -118,6 +118,7 @@ router.get('/:id', (req, res, next) => {
 router.post('/', (req, res, next) => {
   const { title, content, folderId, tags = [] } = req.body;
   const userId = req.user.id;
+  // console.log(req.body.folderId ? 'true':'false');
 
   /***** Never trust users - validate input *****/
   if (!title) {
@@ -128,10 +129,17 @@ router.post('/', (req, res, next) => {
 
   // For folders, verify the folderId is a valid ObjectId and the item belongs to the current user. If the validation fails, then return an error message 'The folderId is not valid' with status 400.
 
-  if (folderId && !mongoose.Types.ObjectId.isValid(folderId)) {
-    const err = new Error('The `folderId` is not valid');
-    err.status = 400;
-    return next(err);
+  const newNote = { title, content, tags, userId };
+
+
+  if (folderId) {
+    if (mongoose.Types.ObjectId.isValid(folderId)){
+      newNote.folderId = folderId;
+    } else {
+      const err = new Error('The `folderId` is not valid');
+      err.status = 400;
+      return next(err);
+    } 
   }
 
   if (tags) {
@@ -143,8 +151,6 @@ router.post('/', (req, res, next) => {
       }
     });
   }
-
-  const newNote = { title, content, folderId, tags, userId };
 
   Promise.all([
     validateFolderId(folderId, userId),
