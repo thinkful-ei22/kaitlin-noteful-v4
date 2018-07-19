@@ -32,8 +32,11 @@ describe('Noteful API - Tags', function () {
     return Promise.all([
       User.insertMany(seedUsers),
       Tag.insertMany(seedTags),
-      Tag.createIndexes()
     ])
+      .then(([users]) => {
+        Tag.createIndexes();
+        return [users];
+      })
       .then(([users]) => {
         user = users[0];
         token = jwt.sign({ user }, JWT_SECRET, { subject: user.username });
