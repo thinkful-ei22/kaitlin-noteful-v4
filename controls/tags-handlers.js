@@ -51,7 +51,7 @@ const createTagHandler = (req, res, next) => {
   const newTag = { name, userId };
 
   /***** Never trust users - validate input *****/
-  if (!name) {
+  if (!name.trim()) {
     const err = new Error('Missing `name` in request body');
     err.status = 400;
     return next(err);

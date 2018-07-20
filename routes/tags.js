@@ -1,11 +1,7 @@
 'use strict';
 
 const express = require('express');
-const mongoose = require('mongoose');
 const passport = require('passport');
-
-const Tag = require('../models/tag');
-const Note = require('../models/note');
 
 const router = express.Router();
 
