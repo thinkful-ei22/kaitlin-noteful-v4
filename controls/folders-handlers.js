@@ -46,16 +46,20 @@ const getFolderByIdHandler = (req, res, next) => {
 const createFolderHandler = (req, res, next) => {
   let { name } = req.body;
   const userId = req.user.id;
-  const id = req.body.id;
-
-  const newFolder = { name, userId };
 
   /***** Never trust users - validate input *****/
-  if (!name.trim()) {
+
+  if (name) {
+    name = name.trim();
+  }
+
+  if (!name) {
     const err = new Error('Missing `name` in request body');
     err.status = 400;
     return next(err);
   } 
+
+  const newFolder = { name: name.trim(), userId };
   
   Folder.create(newFolder)
     .then(result => {

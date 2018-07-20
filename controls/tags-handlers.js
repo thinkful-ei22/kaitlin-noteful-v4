@@ -45,18 +45,23 @@ const getTagByIdHandler = (req, res, next) => {
 };
 
 const createTagHandler = (req, res, next) => {
-  const { name } = req.body;
+  let { name } = req.body;
   const userId = req.user.id;
 
-  const newTag = { name, userId };
-
   /***** Never trust users - validate input *****/
-  if (!name.trim()) {
+
+  if (name) {
+    name = name.trim();
+  }
+
+  if (!name) {
     const err = new Error('Missing `name` in request body');
     err.status = 400;
     return next(err);
   }
 
+  const newTag = { name: name.trim(), userId };
+  
   Tag.create(newTag)
     .then(result => {
       res.location(`${req.originalUrl}/${result.id}`).status(201).json(result);

@@ -18,7 +18,7 @@ const { TEST_MONGODB_URI, JWT_SECRET, JWT_EXPIRY } = require('../config');
 chai.use(chaiHttp);
 const expect = chai.expect;
 
-describe('Noteful API - Tags', function () {
+describe.only('Noteful API - Tags', function () {
 
   let user;
   let token;
@@ -180,6 +180,7 @@ describe('Noteful API - Tags', function () {
     it('should return an error when given a duplicate name', function () {
       return Tag.findOne()
         .then(data => {
+          // data = data.trim();
           const newItem = { name: data.name };
           return chai.request(app)
             .post('/api/tags')

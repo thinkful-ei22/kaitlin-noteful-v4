@@ -18,7 +18,7 @@ const { TEST_MONGODB_URI, JWT_SECRET, JWT_EXPIRY } = require('../config');
 chai.use(chaiHttp);
 const expect = chai.expect;
 
-describe('Noteful API - Folders', function () {
+describe.only('Noteful API - Folders', function () {
 
   let token; 
   let user;
